@@ -1,0 +1,9 @@
+boto3
+pandas
+apache-airflow
+snowflake-connector-python
+snowflake-sqlalchemy
+apache-airflow-providers-snowflake
+apache-airflow-providers-amazon
+#apache-airflow-providers-apache-kafka
+psycopg2-binary

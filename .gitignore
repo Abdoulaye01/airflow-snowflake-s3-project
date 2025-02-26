@@ -1,0 +1,86 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# DS Store
+.DS_Store
+
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Rope
+.ropeproject
+
+# Django stuff:
+*.log
+*.pot
+
+# Sphinx documentation
+docs/_build/
+
+# Ignore restart-docker.sh:Zone.Identifier file
+restart-docker.sh:Zone.Identifier
+reset-docker.sh:Zone.Identifier
+start-docker.sh:Zone.Identifier
+stop-docker.sh:Zone.Identifier
+private-key.pem:Zone.Identifier
+
+# Ignore all .pem, .p8, and .pub files
+*.pem
+*.p8
+*.pub
+
+# Ignore all .key files
+*.key
+
+# Ignore folder
+.data/
+.data/*
+.data/**/* 
+.env
+.env/*
+.env/**/*
+.plugins/
+.plugins/*
+.plugins/**/*
+.vscode/
+.vscode/*
+.vscode/**/*
+
+# Ignore specific files
+data/city_market_tracker.gz
+data/extract_zip_csv/redfin_data_18022025162627.parquet
