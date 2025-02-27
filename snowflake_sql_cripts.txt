@@ -1,0 +1,125 @@
+// Adding the key
+SHOW users;
+DESCRIBE user user2025;
+alter user user2025 set RSA_PUBLIC_KEY=''
+ALTER USER user2025 UNSET RSA_PUBLIC_KEY;
+
+DROP DATABASE IF EXISTS redfin_DB;
+CREATE DATABASE redfin_DB;
+//CREATE WAREHOUSE redfin_warehouse;
+CREATE SCHEMA redfin_schema;
+// Create Table
+//TRUNCATE TABLE redfin_DB.redfin_schema.redfin_table;
+CREATE OR REPLACE TABLE redfin_DB.redfin_schema.redfin_table (
+period_begin DATE,
+period_end DATE,
+period_duration INT,
+region_type STRING,
+region_type_id INT,
+table_id INT,
+is_seasonally_adjusted STRING,
+city STRING,
+state STRING,
+state_code STRING,
+property_type STRING,
+property_type_id INT,
+median_sale_price FLOAT,
+median_list_price FLOAT,
+median_ppsf FLOAT,
+median_list_ppsf FLOAT,
+homes_sold FLOAT,
+inventory FLOAT,
+months_of_supply FLOAT,
+median_dom FLOAT,
+avg_sale_to_list FLOAT,
+sold_above_list FLOAT,
+parent_metro_region_metro_code STRING,
+last_updated DATETIME,
+period_begin_in_years STRING,
+period_end_in_years STRING,
+period_begin_in_months STRING,
+period_end_in_months STRING,
+year INT,
+month_name STRING
+)
+CLUSTER BY (year, month_name);
+
+SELECT *
+FROM redfin_DB.redfin_schema.redfin_table LIMIT 10;
+
+SELECT COUNT(*) FROM redfin_DB.redfin_schema.redfin_table
+-- DESC TABLE redfin_DB.redfin_schema.redfin_table;
+
+
+// Create file format object
+CREATE SCHEMA file_format_schema;
+CREATE OR REPLACE file format redfin_DB.file_format_schema.format_csv
+    type = 'CSV'
+    field_delimiter = ','
+    RECORD_DELIMITER = '\n'
+    skip_header = 1
+    -- error_on_column_count_mismatch = FALSE;
+    
+// Create staging schema
+CREATE SCHEMA external_stage_schema;
+// Create staging
+//DROP STAGE redfin_DB.external_stage_schema.redfin_ext_stage_yml;
+CREATE OR REPLACE STAGE redfin_DB.external_stage_schema.redfin_ext_stage_yml 
+    url="s3://clean-data-bucket5/"
+    credentials=(aws_key_id=''
+    aws_secret_key='')
+    FILE_FORMAT = redfin_DB.file_format_schema.format_csv;
+
+
+list @redfin_DB.external_stage_schema.redfin_ext_stage_yml;
+
+// Create schema for snowpipe
+-- DROP SCHEMA redfin_DB.snowpipe_schema;
+CREATE OR REPLACE SCHEMA redfin_DB.snowpipe_schema;
+
+-- Create the Snowpipe with auto-ingest enabled
+CREATE OR REPLACE PIPE redfin_DB.snowpipe_schema.redfin_snowpipe
+AUTO_INGEST = TRUE
+AS 
+COPY INTO redfin_DB.redfin_schema.redfin_table
+FROM ( 
+  SELECT 
+    $1 AS period_begin,
+    $2 AS period_end,
+    $3 AS period_duration,
+    $4 AS region_type,
+    $5 AS region_type_id,
+    $6 AS table_id,
+    $7 AS is_seasonally_adjusted,
+    $8 AS city,
+    $9 AS state,
+    $10 AS state_code,
+    $11 AS property_type,
+    $12 AS property_type_id,
+    $13 AS median_sale_price,
+    $14 AS median_list_price,
+    $15 AS median_ppsf,
+    $16 AS median_list_ppsf,
+    $17 AS homes_sold,
+    $18 AS inventory,
+    $19 AS months_of_supply,
+    $20 AS median_dom,
+    $21 AS avg_sale_to_list,
+    $22 AS sold_above_list,
+    $23 AS parent_metro_region_metro_code,
+    $24 AS last_updated,
+    $25 AS period_begin_in_years, 
+    $26 AS period_end_in_years, 
+    $27 AS period_begin_in_months,
+    $28 AS period_end_in_months,
+    -- Use METADATA$FILENAME to extract year and month from the file path
+    CAST(REGEXP_SUBSTR(METADATA$FILENAME, '/([^/]+)/([^/]+)/([^/]+)$', 1, 1, 'e', 1) AS NUMBER) AS year,  -- CAST to NUMBER for year
+    REGEXP_SUBSTR(METADATA$FILENAME, '/([^/]+)/([^/]+)/([^/]+)$', 1, 1, 'e', 2) AS month_name
+  FROM @redfin_DB.external_stage_schema.redfin_ext_stage_yml
+)
+ON_ERROR = 'CONTINUE'
+FILE_FORMAT = redfin_DB.file_format_schema.format_csv;
+
+
+
+DESC PIPE redfin_DB.snowpipe_schema.redfin_snowpipe;
