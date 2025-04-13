@@ -40,5 +40,5 @@ To create a robust ETL pipeline that extracts data from various sources, transfo
 
 
 ## Images
-
-![Project Screenshot](airflow-snowflake-s3-etl.jpg)
+![Project Screenshot](Images/airflow-edraw.jpg)
+![Project Screenshot](Images/airflow-snowflake-s3-etl.jpg)
